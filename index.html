@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="id">
+	<head>
+		<meta charset="UTF-8" />
+		<title>Visualisasi Transkripsi Aksara Jawa</title>
+		<style>
+			@font-face {
+				font-family: "AksaraJawa";
+				src: url("./nyk Ngayogyan Jejeg.ttf") format("truetype");
+			}
+
+			body {
+				font-family: Arial, sans-serif;
+				margin: 20px;
+				background: #f9f9f9;
+			}
+
+			h1 {
+				text-align: center;
+			}
+
+			select {
+				display: block;
+				margin: 20px auto;
+				padding: 6px 12px;
+				font-size: 16px;
+			}
+
+			table {
+				width: 100%;
+				border-collapse: collapse;
+				margin-top: 20px;
+			}
+
+			th,
+			td {
+				border: 1px solid #ccc;
+				padding: 8px;
+				text-align: center;
+			}
+
+			th {
+				background: #eee;
+			}
+
+			.index {
+				font-size: 12px;
+				font-weight: bold;
+			}
+
+			.img-id {
+				font-weight: bold;
+			}
+
+			.aksara {
+				font-family: "AksaraJawa";
+				font-size: 80px;
+				white-space: nowrap;
+			}
+
+			.translit {
+				font-size: 12px;
+			}
+
+			.tableWrap {
+				width: 100%;
+				height: 75vh;
+				overflow-y: scroll;
+				border: 1px solid #ccc;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Visualisasi Transkripsi Aksara Jawa</h1>
+
+		<select id="csvSelect">
+			<option value="label_1.csv">Label 1</option>
+			<option value="label_2.csv">Label 2</option>
+			<option value="label_3.csv">Label 3</option>
+			<option value="label_4.csv">Label 4</option>
+			<option value="label_5.csv">Label 5</option>
+			<option value="label_6.csv">Label 6</option>
+			<option value="label_7.csv">Label 7</option>
+			<option value="label_8.csv">Label 8</option>
+		</select>
+
+		<div class="tableWrap">
+			<table id="dataTable">
+				<thead>
+					<tr>
+						<th>No.</th>
+						<th>ID Gambar</th>
+						<th>Aksara Jawa</th>
+						<th>Transliterasi</th>
+					</tr>
+				</thead>
+				<tbody>
+					<!-- Data akan masuk di sini -->
+				</tbody>
+			</table>
+		</div>
+
+		<script>
+			const tableBody = document.querySelector("#dataTable tbody");
+			const csvSelect = document.getElementById("csvSelect");
+
+			const savedCSV = localStorage.getItem("selectedCSV");
+			if (savedCSV) {
+				csvSelect.value = savedCSV;
+			}
+
+			async function loadCSV(filename) {
+				tableBody.innerHTML = ""; // reset tabel
+				try {
+					const response = await fetch(filename);
+					if (!response.ok) {
+						console.warn(`Gagal load ${filename}: ${response.status}`);
+						return;
+					}
+					const text = await response.text();
+					parseCSV(text);
+				} catch (err) {
+					console.error(`Error load ${filename}:`, err);
+				}
+			}
+
+			function parseCSV(text) {
+				const lines = text.trim().split("\n");
+				for (let i = 1; i < lines.length; i++) {
+					const row = lines[i].split(",");
+
+					const tr = document.createElement("tr");
+
+					// Index angka
+					const indexTd = document.createElement("td");
+					indexTd.textContent = i;
+					indexTd.classList.add("index");
+
+					// ID Gambar
+					const idTd = document.createElement("td");
+					idTd.textContent = row[0].split("_")[2].split(".")[0] || row[0];
+					idTd.classList.add("img-id");
+
+					// Aksara Jawa (transcript)
+					const aksaraTd = document.createElement("td");
+					aksaraTd.textContent = row[1];
+					aksaraTd.classList.add("aksara");
+
+					// Transliterasi
+					const translitTd = document.createElement("td");
+					translitTd.textContent = row[2];
+					translitTd.classList.add("translit");
+
+					tr.appendChild(indexTd);
+					tr.appendChild(idTd);
+					tr.appendChild(aksaraTd);
+					tr.appendChild(translitTd);
+
+					tableBody.appendChild(tr);
+				}
+			}
+
+			csvSelect.addEventListener("change", () => {
+				const selected = csvSelect.value;
+				localStorage.setItem("selectedCSV", selected);
+				loadCSV(selected);
+			});
+
+			window.addEventListener("DOMContentLoaded", () => {
+				loadCSV(csvSelect.value);
+			});
+		</script>
+	</body>
+</html>
